@@ -43,6 +43,9 @@ services:
     build:
       context: ./client
       dockerfile: frontend.Dockerfile
+      args:                     # Pass build-time env vars
+        VITE_API_BASE_URL: http://backend:8080/api
+        VITE_CURRENCY: "₹"
     container_name: grocery-frontend
     restart: on-failure
     depends_on:
@@ -51,8 +54,6 @@ services:
       - "8082:80"   # Host:Container
     networks:
       - grocery-net
-    environment:
-      - VITE_API_URL=http://grocery-backend:8080
 
 volumes:
   mysql-data:
