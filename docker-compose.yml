@@ -1,3 +1,5 @@
+version: "3.9"
+
 services:
   mysqldb:
     container_name: mysql-db
@@ -50,7 +52,7 @@ services:
     networks:
       - grocery-net
     environment:
-      - VITE_API_URL=http://backend:8080
+      - VITE_API_URL=http://grocery-backend:8080
 
 volumes:
   mysql-data:
