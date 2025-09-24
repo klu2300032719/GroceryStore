@@ -1,0 +1,60 @@
+services:
+  mysqldb:
+    container_name: mysql-db
+    image: mysql:8
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: grocerydb
+    ports:
+      - "3308:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - grocery-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./SPRINGBOOTWORKSPACE/GroceryStoreApplication
+      dockerfile: backend.Dockerfile
+    container_name: grocery-backend
+    restart: on-failure
+    depends_on:
+      mysqldb:
+        condition: service_healthy
+    ports:
+      - "2025:8080"   # Host:Container
+    networks:
+      - grocery-net
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysqldb:3306/grocerydb
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+
+  frontend:
+    build:
+      context: ./client
+      dockerfile: frontend.Dockerfile
+    container_name: grocery-frontend
+    restart: on-failure
+    depends_on:
+      - backend
+    ports:
+      - "8082:80"   # Host:Container
+    networks:
+      - grocery-net
+    environment:
+      - VITE_API_URL=http://backend:8080
+
+volumes:
+  mysql-data:
+
+networks:
+  grocery-net:
+    driver: bridge
